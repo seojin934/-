@@ -1,0 +1,111 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미니게임 놀이터</title>
+<style>
+:root{--ink:#302b45;--muted:#827d94;--purple:#8068e8;--pink:#ff86a9;--line:#eeeaf5;--bg:#f8f7fc}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 8% 0,#fce6ef 0,transparent 28%),radial-gradient(circle at 100% 15%,#e8e3ff 0,transparent 30%),var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #b5a7ff;outline-offset:2px}
+.wrap{width:min(1100px,calc(100% - 30px));margin:auto;padding:28px 0 50px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px}.logo{width:50px;height:50px;border-radius:17px;background:white;display:grid;place-items:center;font-size:27px;box-shadow:0 7px 22px #51418b14}
+h1{font-size:clamp(24px,4vw,33px);letter-spacing:-1.2px;margin:0}.subtitle{font-size:13px;color:var(--muted);margin-top:3px}.score-pill{background:#fff;border:1px solid white;border-radius:30px;padding:10px 15px;font-weight:800;color:#715bd0;white-space:nowrap}
+.hero{background:linear-gradient(115deg,#8068e8,#a18bea 58%,#e58eb4);border-radius:26px;padding:25px 28px;color:white;display:flex;justify-content:space-between;align-items:center;gap:15px;box-shadow:0 14px 32px #826ce82c;margin-bottom:24px}.hero h2{font-size:clamp(20px,3vw,27px);margin:0 0 7px}.hero p{margin:0;color:#f2edff;font-size:14px}.hero-art{font-size:65px}
+.section-head{display:flex;align-items:end;justify-content:space-between;margin:24px 2px 13px}.section-head h2{font-size:19px;margin:0}.section-head span{font-size:12px;color:var(--muted)}
+.games{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.game-card{background:#ffffffdf;border:1px solid white;border-radius:21px;padding:17px;text-align:left;box-shadow:0 8px 24px #51418b0b;transition:.18s;color:var(--ink)}.game-card:hover{transform:translateY(-3px);box-shadow:0 12px 25px #51418b18}.game-icon{height:95px;border-radius:16px;display:grid;place-items:center;font-size:48px;margin-bottom:13px}.game-card strong{font-size:15px}.game-card p{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+.panel{margin-top:22px;background:#fff;border:1px solid white;border-radius:24px;padding:22px;box-shadow:0 10px 28px #51418b10;min-height:250px}.panel-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.panel h2{font-size:20px;margin:0}.back{border:0;background:#f1eff8;color:#665d7c;border-radius:12px;padding:9px 13px;font-size:13px;font-weight:700}.hidden{display:none!important}
+.game-area{text-align:center;padding:10px 0 4px}.instructions{color:var(--muted);font-size:13px;margin:0 0 18px}.primary{border:0;background:var(--purple);color:white;border-radius:13px;padding:11px 18px;font-weight:750;box-shadow:0 5px 12px #8068e833}.secondary{border:0;background:#f1eff8;color:#655c7a;border-radius:13px;padding:11px 16px;font-weight:700}.controls{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:14px}
+.big-number{font-size:45px;font-weight:850;letter-spacing:2px;margin:12px}.message{min-height:25px;color:#786c9b;font-size:14px;margin-top:12px;font-weight:650}
+.choice-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.choice{width:105px;height:100px;border:2px solid var(--line);background:#fff;border-radius:18px;font-size:39px}.choice:hover{border-color:#b9aaff;background:#faf8ff}.choice small{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+input.guess{width:150px;text-align:center;border:2px solid var(--line);border-radius:13px;padding:11px;font-size:20px}
+.memory-grid{display:grid;grid-template-columns:repeat(4,minmax(55px,75px));justify-content:center;gap:9px}.memory-tile{aspect-ratio:1;border:0;border-radius:13px;background:#eae5ff;font-size:27px}.memory-tile.open{background:#fff2f6}.memory-tile.done{background:#e4f7ed;cursor:default}
+.rps{font-size:70px;min-height:88px}.reaction-box{max-width:480px;height:160px;border-radius:20px;margin:auto;display:grid;place-items:center;background:#eeeaff;color:#6654bd;font-size:20px;font-weight:800;user-select:none;cursor:pointer;padding:15px}.reaction-box.wait{background:#fff0d9;color:#a76b20}.reaction-box.ready{background:#dff7e9;color:#218453}.reaction-box.too-soon{background:#ffe7ed;color:#bb4968}
+footer{text-align:center;color:#a39cad;font-size:11px;margin-top:25px}
+@media(max-width:720px){.games{grid-template-columns:repeat(2,1fr)}.hero{padding:21px}.hero-art{font-size:50px}}
+@media(max-width:430px){.games{gap:9px}.game-card{padding:12px}.game-icon{height:78px;font-size:40px}.panel{padding:16px}.score-pill{font-size:12px;padding:9px 11px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+ <div class="brand"><div class="logo">🎮</div><div><h1>미니게임 놀이터</h1><div class="subtitle">심심할 때 가볍게 즐기는 작은 게임 세상</div></div></div>
+ <div class="score-pill">🏆 내 점수 <span id="totalScore">0</span></div>
+</header>
+<section class="hero"><div><h2>오늘은 어떤 게임을 해볼까?</h2><p>게임을 선택하고 기록을 세워보세요. 모든 게임은 바로 플레이할 수 있어요!</p></div><div class="hero-art">🕹️✨</div></section>
+<div id="lobby">
+ <div class="section-head"><h2>🎯 게임 선택</h2><span>원하는 게임을 눌러 시작하세요</span></div>
+ <div class="games">
+  <button class="game-card" data-game="number"><div class="game-icon" style="background:#fff0e8">🔢</div><strong>숫자 맞히기</strong><p>1부터 100 사이의 숨겨진 숫자를 찾아보세요.</p></button>
+  <button class="game-card" data-game="rps"><div class="game-icon" style="background:#f0edff">✊</div><strong>가위바위보</strong><p>컴퓨터와 대결해서 승리해 보세요!</p></button>
+  <button class="game-card" data-game="memory"><div class="game-icon" style="background:#e9f8f1">🧠</div><strong>카드 짝 맞추기</strong><p>같은 그림이 있는 카드 두 장을 찾아보세요.</p></button>
+  <button class="game-card" data-game="reaction"><div class="game-icon" style="background:#fff0f5">⚡</div><strong>반응속도 테스트</strong><p>초록색으로 바뀌는 순간 최대한 빠르게 누르세요.</p></button>
+  <button class="game-card" data-game="clicker"><div class="game-icon" style="background:#fff7df">🍪</div><strong>쿠키 클릭</strong><p>10초 동안 쿠키를 최대한 많이 클릭하세요.</p></button>
+  <button class="game-card" data-game="quiz"><div class="game-icon" style="background:#eaf3ff">💡</div><strong>상식 퀴즈</strong><p>간단한 문제를 풀고 지식을 뽐내보세요.</p></button>
+ </div>
+</div>
+<section id="panel" class="panel hidden">
+ <div class="panel-top"><h2 id="gameTitle">게임</h2><button class="back" id="backBtn">← 게임 목록</button></div>
+ <div id="gameContent" class="game-area"></div>
+</section>
+<footer>즐겁게 플레이하고 나만의 최고 기록을 만들어 보세요! · 점수는 이 브라우저에 저장됩니다.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let total=Number(localStorage.getItem('miniArcadeScore')||0);
+function score(n){total+=n;localStorage.setItem('miniArcadeScore',total);$('totalScore').textContent=total}
+$('totalScore').textContent=total;
+function openGame(id,title,html){$('lobby').classList.add('hidden');$('panel').classList.remove('hidden');$('gameTitle').textContent=title;$('gameContent').innerHTML=html}
+function lobby(){clearInterval(window.gameTimer);clearTimeout(window.gameTimeout);$('panel').classList.add('hidden');$('lobby').classList.remove('hidden')}
+$('backBtn').onclick=lobby;
+document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>startGame(b.dataset.game));
+
+function startGame(id){
+ if(id==='number') numberGame();
+ if(id==='rps') rpsGame();
+ if(id==='memory') memoryGame();
+ if(id==='reaction') reactionGame();
+ if(id==='clicker') clickerGame();
+ if(id==='quiz') quizGame();
+}
+function numberGame(){
+ let answer=Math.floor(Math.random()*100)+1,tries=0,done=false;
+ openGame('number','🔢 숫자 맞히기',`<p class="instructions">1부터 100 사이의 숫자를 맞혀보세요. 정답에 가까워지도록 힌트를 드릴게요!</p><div class="big-number">❔</div><input class="guess" id="guess" type="number" min="1" max="100" placeholder="숫자 입력"><div class="controls"><button class="primary" id="submitGuess">정답 확인</button><button class="secondary" id="newNumber">새 게임</button></div><div class="message" id="numberMsg">몇 번 만에 맞힐 수 있을까요?</div>`);
+ const check=()=>{if(done)return;let v=Number($('guess').value);if(!Number.isInteger(v)||v<1||v>100){$('numberMsg').textContent='1부터 100 사이의 정수를 입력해 주세요.';return}tries++;if(v===answer){done=true;let pts=Math.max(5,30-tries*3);score(pts);$('numberMsg').textContent=`정답이에요! ${tries}번 만에 성공 · +${pts}점 🎉`;$('guess').disabled=true}else $('numberMsg').textContent=v<answer?'더 큰 숫자예요! ⬆️':'더 작은 숫자예요! ⬇️';};
+ $('submitGuess').onclick=check;$('guess').onkeydown=e=>{if(e.key==='Enter')check()};$('newNumber').onclick=numberGame;
+}
+function rpsGame(){
+ openGame('rps','✊ 가위바위보',`<p class="instructions">원하는 손 모양을 선택하세요. 컴퓨터와 한 판 대결!</p><div class="rps" id="rpsResult">🤜　VS　🤛</div><div class="choice-row"><button class="choice" data-rps="가위">✌️<small>가위</small></button><button class="choice" data-rps="바위">✊<small>바위</small></button><button class="choice" data-rps="보">✋<small>보</small></button></div><div class="message" id="rpsMsg">선택을 기다리는 중...</div><div class="controls"><button class="secondary" id="rpsReset">다시 하기</button></div>`);
+ const icons={가위:'✌️',바위:'✊',보:'✋'};document.querySelectorAll('[data-rps]').forEach(b=>b.onclick=()=>{let me=b.dataset.rps,all=['가위','바위','보'],cpu=all[Math.floor(Math.random()*3)],result=me===cpu?'비겼어요!':((me==='가위'&&cpu==='보')||(me==='바위'&&cpu==='가위')||(me==='보'&&cpu==='바위'))?'이겼어요! +10점 🎉':'아쉬워요! 다음엔 이길 수 있어요.';if(result.startsWith('이겼'))score(10);$('rpsResult').textContent=`${icons[me]}　VS　${icons[cpu]}`;$('rpsMsg').textContent=`나: ${me} · 컴퓨터: ${cpu} → ${result}`});$('rpsReset').onclick=rpsGame;
+}
+function memoryGame(){
+ const faces=['🍓','🍋','🐸','🐼','🍉','⭐'];let deck=[...faces,...faces].sort(()=>Math.random()-.5),opened=[],matched=0,locked=false,moves=0;
+ openGame('memory','🧠 카드 짝 맞추기',`<p class="instructions">카드를 두 장씩 뒤집어 같은 그림을 찾아보세요!</p><p id="memoryInfo" class="message">찾은 짝: 0 / 6 · 시도: 0회</p><div class="memory-grid" id="memoryGrid">${deck.map((_,i)=>`<button class="memory-tile" data-index="${i}">❔</button>`).join('')}</div><div class="message" id="memoryMsg">카드를 눌러 시작하세요.</div><div class="controls"><button class="secondary" id="memoryReset">새 게임</button></div>`);
+ document.querySelectorAll('.memory-tile').forEach(b=>b.onclick=()=>{let i=+b.dataset.index;if(locked||opened.includes(i)||b.classList.contains('done'))return;b.textContent=deck[i];b.classList.add('open');opened.push(i);if(opened.length===2){moves++;locked=true;let [a,c]=opened;if(deck[a]===deck[c]){[a,c].forEach(k=>{let el=document.querySelector(`[data-index="${k}"]`);el.classList.add('done');el.classList.remove('open')});matched++;opened=[];locked=false;$('memoryMsg').textContent='짝을 찾았어요! 잘했어요 💜';$('memoryInfo').textContent=`찾은 짝: ${matched} / 6 · 시도: ${moves}회`;if(matched===6){let pts=Math.max(10,60-moves*2);score(pts);$('memoryMsg').textContent=`모두 찾았어요! ${moves}회 만에 성공 · +${pts}점 🏆`}}else{ $('memoryInfo').textContent=`찾은 짝: ${matched} / 6 · 시도: ${moves}회`;setTimeout(()=>{[a,c].forEach(k=>{let el=document.querySelector(`[data-index="${k}"]`);if(el){el.textContent='❔';el.classList.remove('open')}});opened=[];locked=false},750)}}});$('memoryReset').onclick=memoryGame;
+}
+function reactionGame(){
+ let state='idle',start=0;
+ openGame('reaction','⚡ 반응속도 테스트',`<p class="instructions">시작 버튼을 누르고 기다리세요. 화면이 초록색으로 바뀌면 즉시 눌러주세요!</p><div class="reaction-box" id="reactionBox">시작 버튼을 눌러주세요</div><div class="controls"><button class="primary" id="reactionStart">시작</button></div><div class="message" id="reactionMsg">너의 반응속도는 몇 ms일까요?</div>`);
+ const box=$('reactionBox');$('reactionStart').onclick=()=>{clearTimeout(window.gameTimeout);state='wait';box.className='reaction-box wait';box.textContent='기다리세요...';$('reactionMsg').textContent='초록색으로 바뀌기 전에는 누르지 마세요!';window.gameTimeout=setTimeout(()=>{state='ready';start=performance.now();box.className='reaction-box ready';box.textContent='지금 클릭!'},1200+Math.random()*3000)};
+ box.onclick=()=>{if(state==='wait'){clearTimeout(window.gameTimeout);state='idle';box.className='reaction-box too-soon';box.textContent='너무 빨랐어요!';$('reactionMsg').textContent='초록색으로 바뀐 뒤에 눌러야 해요. 다시 도전!'}else if(state==='ready'){let ms=Math.round(performance.now()-start);state='idle';box.className='reaction-box';box.textContent=ms+' ms';let pts=ms<250?20:ms<400?10:5;score(pts);$('reactionMsg').textContent=`반응속도 ${ms}ms · +${pts}점! ${ms<250?'엄청 빨라요!':'좋아요! 한 번 더 도전해 보세요.'}`}};
+}
+function clickerGame(){
+ let count=0,left=10,running=false;
+ openGame('clicker','🍪 쿠키 클릭',`<p class="instructions">10초 동안 쿠키를 최대한 많이 눌러보세요!</p><div class="big-number" id="cookieCount">0</div><button id="cookie" style="border:0;background:#fff3df;border-radius:28px;width:145px;height:135px;font-size:76px;box-shadow:inset 0 -7px #efd7b3">🍪</button><div class="message" id="cookieTime">준비됐나요? 시작을 눌러주세요.</div><div class="controls"><button class="primary" id="cookieStart">게임 시작</button></div>`);
+ $('cookie').disabled=true;$('cookie').onclick=()=>{if(running){count++;$('cookieCount').textContent=count}};$('cookieStart').onclick=()=>{if(running)return;count=0;left=10;running=true;$('cookie').disabled=false;$('cookieCount').textContent='0';$('cookieTime').textContent='남은 시간: 10초';$('cookieStart').disabled=true;window.gameTimer=setInterval(()=>{left--;$('cookieTime').textContent=`남은 시간: ${left}초`;if(left<=0){clearInterval(window.gameTimer);running=false;$('cookie').disabled=true;$('cookieStart').disabled=false;let pts=count;score(pts);$('cookieTime').textContent=`종료! ${count}번 클릭 · +${pts}점 🎉`}},1000)};
+}
+function quizGame(){
+ const qs=[{q:'대한민국의 수도는 어디일까요?',a:['부산','서울','대전','인천'],c:1,e:'서울은 대한민국의 수도입니다.'},{q:'물의 화학식은 무엇일까요?',a:['CO₂','O₂','H₂O','NaCl'],c:2,e:'물 분자는 수소 원자 2개와 산소 원자 1개로 이루어져 H₂O입니다.'},{q:'태양계에서 가장 큰 행성은?',a:['지구','화성','토성','목성'],c:3,e:'목성은 태양계에서 가장 큰 행성입니다.'},{q:'일주일은 며칠일까요?',a:['5일','6일','7일','8일'],c:2,e:'일주일은 7일입니다.'},{q:'식물이 광합성에 주로 사용하는 기체는?',a:['산소','이산화탄소','질소','헬륨'],c:1,e:'식물은 이산화탄소와 물을 이용해 광합성을 합니다.'}];
+ let index=0,correct=0,finished=false;
+ openGame('quiz','💡 상식 퀴즈',`<p class="instructions" id="quizProgress">1 / ${qs.length} 문제</p><h3 id="quizQuestion" style="font-size:21px;margin:18px 0">문제</h3><div id="quizChoices" class="choice-row" style="max-width:600px;margin:auto"></div><div id="quizMsg" class="message"></div><div class="controls"><button id="quizNext" class="primary" disabled>다음 문제</button></div>`);
+ function show(){let q=qs[index];$('quizProgress').textContent=`${index+1} / ${qs.length} 문제`;$('quizQuestion').textContent=q.q;$('quizMsg').textContent='정답을 선택하세요.';$('quizNext').disabled=true;$('quizNext').textContent=index===qs.length-1?'결과 보기':'다음 문제';$('quizChoices').innerHTML=q.a.map((v,i)=>`<button class="secondary" data-answer="${i}" style="min-width:115px">${i+1}. ${v}</button>`).join('');document.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{if(b.disabled)return;document.querySelectorAll('[data-answer]').forEach(x=>x.disabled=true);let ok=+b.dataset.answer===q.c;if(ok)correct++;$('quizMsg').textContent=(ok?'정답이에요! 🎉 ':'아쉬워요. 정답은 '+q.a[q.c]+'입니다. ') + q.e;$('quizNext').disabled=false})}
+ $('quizNext').onclick=()=>{if(index<qs.length-1){index++;show()}else{finished=true;let pts=correct*10;score(pts);$('quizProgress').textContent='퀴즈 완료';$('quizQuestion').textContent=`${qs.length}문제 중 ${correct}문제 정답!`;$('quizChoices').innerHTML='';$('quizMsg').textContent=`획득 점수: +${pts}점`; $('quizNext').textContent='다시 풀기';$('quizNext').disabled=false;$('quizNext').onclick=quizGame}};show();
+}
+</script>
+</body>
+</html>'''
+path = Path("/mnt/data/index.html")
+path.write_text(html, encoding="utf-8")
+print(f"index.html 생성 완료 ({path.stat().st_size:,} bytes)")
